@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework import status
+from rest_framework.status import HTTP_200_OK,HTTP_409_CONFLICT,HTTP_404_NOT_FOUND,HTTP_201_CREATED
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
@@ -20,7 +20,7 @@ class Users_View(APIView):
         found_user = Users.objects.filter(email=serializer.validated_data['email']).exists()
 
         if found_user:
-            return Response({'message':'User already exists'},status.HTTP_409_CONFLICT)
+            return Response({'message':'User already exists'},HTTP_409_CONFLICT)
 
         serializer.validated_data['password'] = make_password(serializer.validated_data['password'])
         
@@ -29,7 +29,11 @@ class Users_View(APIView):
         
 
         serializer = Users_serializers(user)
-        return Response(serializer.data,status.HTTP_201_CREATED)
+        return Response(serializer.data,HTTP_201_CREATED)
+    
+    def get(self,_:Request):
+        serializer = Users_serializers(Users.objects.all(),many=True)
+        return Response(serializer.data,HTTP_200_OK)
 
 
 class Login_view(APIView):
@@ -44,9 +48,9 @@ class Login_view(APIView):
         )
 
         if not user:
-            return Response({'msg':"nao achou o usuario"},status.HTTP_404_NOT_FOUND)
+            return Response({'msg':"nao achou o usuario"},HTTP_404_NOT_FOUND)
 
         
         token,_ = Token.objects.get_or_create(user=user)
 
-        return Response({'token':token.key},status.HTTP_200_OK)
+        return Response({'token':token.key},HTTP_200_OK)
