@@ -1218,7 +1218,7 @@ class TestAddress(TestCase):
         # Logando com student para criar um endereço
         token = self.client.post("/api/login/", self.student_login_data, format="json").json()["token"]
         self.client.credentials(HTTP_AUTHORIZATION="Token " + token)
-        
+
         response = self.client.put("/api/address/", self.address_data, format="json")
         output = response.json()
 

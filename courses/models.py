@@ -11,4 +11,4 @@ class Courses(models.Model):
     link_repo       = models.CharField(max_length=125)
 
     students        = models.ManyToManyField('users.Users',related_name='courses')
-    instructor      = models.OneToOneField('users.Users',related_name='course',default=None,on_delete=models.CASCADE)
+    instructor      = models.OneToOneField('users.Users',related_name='course',default=None,on_delete=models.CASCADE,null=True)

@@ -6,7 +6,7 @@ from users.serializers import Users_serializers
 
 class Adresses_serializers(serializers.Serializer):
 
-    uui     = serializers.CharField(read_only=True)
+    uuid             = serializers.UUIDField(read_only=True)
     street          = serializers.CharField()
     house_number    = serializers.IntegerField()
     city            = serializers.CharField()
