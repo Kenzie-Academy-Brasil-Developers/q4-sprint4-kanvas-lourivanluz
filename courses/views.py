@@ -3,31 +3,29 @@ from django.forms import ValidationError
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_404_NOT_FOUND
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY
     )
-from rest_framework.authentication import TokenAuthentication
 
 
 from courses.models import Courses
-from courses.serializers import Courses_serializers, CoursesSerializerPutStudents, CoursesSerializersForPath,CoursesSerializersPutInstructor
+from courses.serializers import CoursesSerializers, CoursesSerializerPutStudents, CoursesSerializersForPath,CoursesSerializersPutInstructor
 from users.models import Users
 from kanvas_app.permissions import IsAdmim
-
-
 
 class Courses_view(APIView):
     authentication_classes = [TokenAuthentication]
     permissions_classes = [IsAdmim]
 
     def get(self,_:Request):
-        serializer = Courses_serializers(Courses.objects.all(),many=True)
+        serializer = CoursesSerializers(Courses.objects.all(),many=True)
         return Response(serializer.data,HTTP_200_OK)
 
     def post(self,request:Request):
@@ -37,16 +35,15 @@ class Courses_view(APIView):
         if not user.is_admin:
             return Response({"detail": "You do not have permission to perform this action."},HTTP_403_FORBIDDEN)
         try:
-            serializer = Courses_serializers(data=request.data)
+            serializer = CoursesSerializers(data=request.data)
             serializer.is_valid(raise_exception=True)
             course:Courses = Courses.objects.create(**serializer.validated_data)
-            serializer = Courses_serializers(course)
+            serializer = CoursesSerializers(course)
 
             return Response(serializer.data,HTTP_201_CREATED)
         except IntegrityError:
             return Response({'message': 'Course already exists'},HTTP_422_UNPROCESSABLE_ENTITY)
 
-    
     def put(self,request:Request,course_id):
         user:Users = request.user
         if user.is_anonymous:
@@ -54,12 +51,10 @@ class Courses_view(APIView):
         if not user.is_admin:
             return Response({"detail": "You do not have permission to perform this action."},HTTP_403_FORBIDDEN)
         
-        
         course:Courses = Courses.objects.filter(uuid=course_id).first()
         if not course:
             return Response({'message': 'Course does not exist'},HTTP_404_NOT_FOUND)
     
-
         serializer = CoursesSerializersPutInstructor(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -76,13 +71,10 @@ class Courses_view(APIView):
         course.instructor = instructor
         course.save()
 
-        serializer = Courses_serializers(course)
+        serializer = CoursesSerializers(course)
         return Response(serializer.data,HTTP_200_OK)
 
     
-
-
-
 class CursesViewPutStudents(APIView):
     authentication_classes = [TokenAuthentication]
     permissions_classes = [IsAdmim]
@@ -91,7 +83,7 @@ class CursesViewPutStudents(APIView):
         try:
             course:Courses = Courses.objects.filter(uuid=course_id).first()   
             if course: 
-                serializer = Courses_serializers(course)
+                serializer = CoursesSerializers(course)
                 return Response(serializer.data,HTTP_200_OK)
             return Response({'message': 'Course does not exist'},HTTP_404_NOT_FOUND)
         except ValidationError:
@@ -105,14 +97,11 @@ class CursesViewPutStudents(APIView):
         if not user.is_admin:
             return Response({"detail": "You do not have permission to perform this action."},HTTP_403_FORBIDDEN)
         
-
-
         course:Courses = Courses.objects.filter(uuid=course_id).first()
         if not course:
             return Response({"message": 'Course does not exist'},HTTP_404_NOT_FOUND)
 
         serializer = CoursesSerializerPutStudents(data=request.data)
-        
         serializer.is_valid(raise_exception=True)
 
         for uuid in serializer.validated_data['students_id']:
@@ -126,13 +115,12 @@ class CursesViewPutStudents(APIView):
 
                 course.students.add(student)
                 course.save()
-            serializer = Courses_serializers(course)
+            serializer = CoursesSerializers(course)
 
         return Response(serializer.data)
 
     
     def patch(self,request:Request,course_id):
-
         user:Users = request.user
         if user.is_anonymous:
             return Response({'detail': 'Authentication credentials were not provided.'},HTTP_401_UNAUTHORIZED)
@@ -144,10 +132,9 @@ class CursesViewPutStudents(APIView):
             if not course.first():
                 return Response({"message": 'Course does not exist'},HTTP_404_NOT_FOUND)
 
-
             serializer = CoursesSerializersForPath(request.data)
             course.update(**serializer.data)
-            serializer = Courses_serializers(course.first())
+            serializer = CoursesSerializers(course.first())
 
             return Response(serializer.data,HTTP_200_OK)
         except IntegrityError:
@@ -166,8 +153,6 @@ class CursesViewPutStudents(APIView):
 
         course.delete()
         
-        serializer = Courses_serializers(course.first())
-
         return Response('',HTTP_204_NO_CONTENT)
 
         

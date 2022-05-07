@@ -7,10 +7,9 @@ from rest_framework.authentication import TokenAuthentication
 
 
 from addresses.models import Addresses
-from addresses.serializers import Adresses_serializers
+from addresses.serializers import AdressesSerializers
 from users.models import Users
 from kanvas_app.permissions import IsAdmim
-
 
 class AdressView(APIView):
 
@@ -23,13 +22,12 @@ class AdressView(APIView):
         if user.is_anonymous:
             return Response({"detail": "Invalid token."},HTTP_401_UNAUTHORIZED)
 
-
-        serializer = Adresses_serializers(data=request.data)
+        serializer = AdressesSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         adress,_ = Addresses.objects.get_or_create(**serializer.validated_data)
         adress.users.add(user)
         adress.save()
-        serializer = Adresses_serializers(adress)
+        serializer = AdressesSerializers(adress)
         return Response(serializer.data,HTTP_200_OK)
         

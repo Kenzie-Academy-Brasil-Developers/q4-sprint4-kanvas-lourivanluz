@@ -1,10 +1,9 @@
 from rest_framework import serializers
 
-from users.serializers import Users_serializers
 
+from users.serializers import UsersSerializers
 
-
-class Adresses_serializers(serializers.Serializer):
+class AdressesSerializers(serializers.Serializer):
 
     uuid             = serializers.UUIDField(read_only=True)
     street          = serializers.CharField()
@@ -14,4 +13,4 @@ class Adresses_serializers(serializers.Serializer):
     zip_code        = serializers.CharField()
     country         = serializers.CharField()
 
-    users = Users_serializers(read_only=True,many=True)
+    users = UsersSerializers(read_only=True,many=True)

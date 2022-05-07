@@ -4,7 +4,6 @@ from rest_framework.request import Request
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_404_NOT_FOUND,
     HTTP_201_CREATED,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN)
@@ -15,19 +14,17 @@ from django.contrib.auth import authenticate
 
 
 from users.models import Users
-from users.serializers import Login_serializers, Users_serializers
+from users.serializers import LoginSerializers, UsersSerializers
 from kanvas_app.permissions import IsAdmim
 
 
-class Users_View(APIView):
-    
+class UsersView(APIView):
     authentication_classes = [TokenAuthentication]
     permissions_classes = [IsAdmim]
     
-
     def post(self,request:Request):
 
-        serializer = Users_serializers(data=request.data)
+        serializer = UsersSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         found_user = Users.objects.filter(email=serializer.validated_data['email']).exists()
 
@@ -38,7 +35,7 @@ class Users_View(APIView):
         
         user = Users.objects.create(**serializer.validated_data)
         
-        serializer = Users_serializers(user)
+        serializer = UsersSerializers(user)
         return Response(serializer.data,HTTP_201_CREATED)
 
     def get(self,request:Request):
@@ -48,14 +45,14 @@ class Users_View(APIView):
         if not user.is_admin:
             return Response({"detail": "You do not have permission to perform this action."},HTTP_403_FORBIDDEN)
             
-        serializer = Users_serializers(Users.objects.all(),many=True)
+        serializer = UsersSerializers(Users.objects.all(),many=True)
         return Response(serializer.data,HTTP_200_OK)
     
 
-class Login_view(APIView):
+class LoginView(APIView):
     def post(self,request:Request):
 
-        serializer = Login_serializers(data=request.data)
+        serializer = LoginSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         user:Users = authenticate(
@@ -66,7 +63,6 @@ class Login_view(APIView):
         if not user:
             return Response({"detail": "unauthorized."},HTTP_401_UNAUTHORIZED)
 
-        
         token,_ = Token.objects.get_or_create(user=user)
 
         return Response({'token':token.key},HTTP_200_OK)

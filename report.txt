@@ -80,7 +80,7 @@ test_update_course_with_conflict_422 (test_api.TestCoursesUpdate) ... ok
 test_update_invalid_course_404 (test_api.TestCoursesUpdate) ... ok
 
 ----------------------------------------------------------------------
-Ran 45 tests in 30.902s
+Ran 45 tests in 31.336s
 
 OK
 Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

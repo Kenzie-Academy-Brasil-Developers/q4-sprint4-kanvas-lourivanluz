@@ -1,18 +1,18 @@
 from rest_framework import serializers
 
-from users.serializers import Users_serializers
 
+from users.serializers import UsersSerializers
 
-class Courses_serializers(serializers.Serializer):
+class CoursesSerializers(serializers.Serializer):
     
     uuid            = serializers.UUIDField(read_only=True)
     name            = serializers.CharField()
     demo_time       = serializers.TimeField()
     created_at      = serializers.DateTimeField(required=False)
     link_repo       = serializers.CharField()
-    instructor      = Users_serializers(required=False)
+    instructor      = UsersSerializers(required=False)
 
-    students        = Users_serializers(required=False,many=True)
+    students        = UsersSerializers(required=False,many=True)
 
 class CoursesSerializersForPath(serializers.Serializer):
     name            = serializers.CharField(required=False)

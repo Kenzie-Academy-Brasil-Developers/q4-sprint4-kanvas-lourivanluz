@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 
-class Users_serializers(serializers.Serializer):
+class UsersSerializers(serializers.Serializer):
 
     uuid            = serializers.CharField(read_only=True)
     is_admin        = serializers.BooleanField(required=False)
@@ -11,6 +11,6 @@ class Users_serializers(serializers.Serializer):
     last_name       = serializers.CharField()
 
 
-class Login_serializers(serializers.Serializer):
+class LoginSerializers(serializers.Serializer):
     email           = serializers.EmailField()
     password        = serializers.CharField()
