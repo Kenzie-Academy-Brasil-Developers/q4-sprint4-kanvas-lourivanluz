@@ -1,60 +1,418 @@
-# Relatório de testes
+# Entrega 10 - Kanvas
 
-Todas as atividades do trimestre possuem requisitos mínimos obrigatórios:
+<p>
+Uma API que tem a finalidade de cadastrar cursos em uma plataforma, criar usuários, promover usuários para instrutores, vincular intrutores para cursos e cadastrar alunos em cursos já criados.
+</p>
 
-<section class="hilightedContet">
+## Funcionalidades
 
-<header>**Importante!**</header>
+<ul>
+  <li>Registro de usuários.</li>
+  <li>Registro de cursos, assim como editar e deletar.</li>
+  <li>Provover usuário para instrutor.</li>
+  <li>Registrar usuário em um curso.</li>
+</ul>
 
-O **formato dos JSONs** de todas as requisições e respostas deve coincidir com os formatos especificados nos enunciados.
+# Endpoints base
 
-As **URLs** definidas devem ser as mesmas especificadas.
+[http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 
-Os **códigos de status HTTP** também devem ser iguais aos definidos para as atividades.
+# Como usar os Endpoints
 
-</section>
+<p>Exite 3 tipos de permissões para acessar os endpoists:</p>
 
-Para auxiliar na checagem desses requisitos e verificar se tudo está de acordo com essas três regras, serão disponibilizados arquivos de testes para cada atividade. Esses arquivos terão o objetivo de garantir que os requisitos mínimos obrigatórios estão sendo atendidos em seu projeto, além de auxiliar a equipe de ensino durante a correção das atividades.
+<ul>
+  <li>Rotas Livres</li>
+  <li>Rotas Estudante</li>
+  <li>Rotas Instrutor</li>
+</ul>
 
-Cada atividade terá um link para seu respectivo arquivo de testes. Basta adicioná-lo à raiz do seu projeto e rodar o seguinte comando:
+<p>As rotas livres sera para criação e login do usuario. não é necessario o envio de token de autenticação </br>
+Rotas com nivel de permissão de usuario poderá ter acesso aos cursos, criar e editar endereço.É necessario o envio de token de autenticação</br>
+Rotas com nivel de permissão de intrutor poderá criar cursos, promover usuarios para instrutor, alterar e deletar cursos alem de vincular alunos aos cursos.É necessario o envio de token de autenticação
 
-    python manage.py test -v 2 &> report.txt
+<p>Logo abaixo seguem exemplos de cada rota aceita pela aplicação, junto com seu
+comportamento esperado, os campos necessários para sua utilização e o que será</p>
+retornado pelo servidor.</p>
 
-O comando executará os testes e adicionará a saída da execução num arquivo chamado `report.txt`. Esse arquivo conterá um relatório dos testes executados e seus respectivos resultados. Caso ele aponte falhas, significa que os requisitos mínimos não estão sendo totalmente cumpridos em seu projeto. Se isso acontecer, o relatório indicará o erro encontrado e apontará o que precisa ser corrigido. Você pode gerar o relatório quantas vezes achar necessário. Apenas a versão final deve ser enviada junto com os demais arquivos do projeto.
+## Rotas
 
-## Utilizando banco Postgres
+- [Users](#users)
+- [Address](#address)
+- [Courses](#courses)
 
-Existe um problema quando rodamos os testes em um banco Postgres, porque ele não reseta os IDs por padrão. Para o caso dos nossos testes, isso é uma pequena dor de cabeça.
+## Users
 
-Sendo assim, caso você queira utilizar um banco Postgres em seu projeto, será necessário incluir a configuração do SQLite apenas para rodar os testes.
+### POST/api/accounts/
 
-    # settings.py
+#### Descrição
 
-    import os
+```
+    - Rota livre
+    - Registra um novo usuráio
+```
 
-    ...
+_Envio:_
 
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': <nome-do-seu-banco>,
-            'USER': <nome-do-user>,
-            'PASSWORD': <senha-do-user>,
-            'HOST': <db-hostname-ou-ip>, # Por estar configurado localmente vai ser no localhost ou 127.0.0.1
-            'PORT': <porta-do-banco> # Por padrão o PostgreSQL roda na porta 5432
-        }
+```json
+{
+  "email": "aluno@hot.com",
+  "password": "1234",
+  "first_name": "Antonio",
+  "last_name": "Foo",
+  "is_admin": false
+}
+```
+
+_Resposta:_
+
+```json
+{
+  "uuid": "97f62170-a9a5-411b-b2ba-d409608fc288",
+  "is_admin": false,
+  "email": "aluno@hot.com",
+  "first_name": "Antonio",
+  "last_name": "Foo"
+}
+```
+
+### GET/api/accounts/
+
+#### Descrição
+
+```
+    - Rota de Instrutor
+    - Retorna uma lista com todos usuários cadastrados
+```
+
+_Envio:_
+
+```json
+nobody
+```
+
+_Resposta:_
+
+```json
+[
+  {
+    "uuid": "97f62170-a9a5-411b-b2ba-d409608fc288",
+    "is_admin": false,
+    "email": "aluno@hot.com",
+    "first_name": "Antonio",
+    "last_name": "Foo"
+  },
+  {
+    "uuid": "07e99feb-4a82-4fc7-9918-7c13db26fafc",
+    "is_admin": true,
+    "email": "adm2@hot.com",
+    "first_name": "adm",
+    "last_name": "jr"
+  }
+]
+```
+
+### POST/api/login/
+
+#### Descrição
+
+```
+    - Rota livre
+    - Loga um usuário
+```
+
+_Envio:_
+
+```json
+{
+  "email": "aluno@hot.com",
+  "password": "1234"
+}
+```
+
+_Resposta:_
+
+```json
+{
+  "token": "6e3fc83da428579a51677d60a3be4978d255cc14"
+}
+```
+
+## Address
+
+### PUT/api/address/
+
+#### Descrição
+
+```
+    - Registra um endereço á um usuário
+```
+
+_Envio:_
+
+```json
+{
+  "zip_code": "123456789",
+  "street": "Rua das Flores",
+  "house_number": "123",
+  "city": "Curitiba",
+  "state": "Paraná",
+  "country": "Brasil"
+}
+```
+
+_Resposta:_
+
+```json
+{
+  "uuid": "3b573ca6-9bd4-4051-bf0f-3ff526ffc237",
+  "street": "Rua das Flores",
+  "house_number": 123,
+  "city": "Curitiba",
+  "state": "Paraná",
+  "zip_code": "123456789",
+  "country": "Brasil",
+  "users": [
+    {
+      "uuid": "97f62170-a9a5-411b-b2ba-d409608fc288",
+      "is_admin": false,
+      "email": "aluno@hot.com",
+      "first_name": "Antonio",
+      "last_name": "Foo"
     }
+  ]
+}
+```
 
-    test = os.environ.get('TEST')
+## Courses
 
-    if test:    
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
-            }
-        }
+### POST/api/courses/
 
-No momento de executar, é necessário incluir a variável `TEST` antes do comando.
+#### Descrição
 
-    TEST=TEST python manage.py test -v 2 &> report.txt
+```
+    - Rota de Instrutor
+    - Registra um curso
+```
+
+_Envio:_
+
+```json
+{
+  "name": "Django",
+  "demo_time": "9:00",
+  "link_repo": "http://django.ts.com/git"
+}
+```
+
+_Resposta:_
+
+```json
+{
+  "uuid": "7a8bcf53-4d1b-4a4b-af9e-c8838ef2d567",
+  "name": "Django",
+  "demo_time": "9:00",
+  "link_repo": "http://django.ts.com/git",
+  "instructor": null,
+  "students": []
+}
+```
+
+### GET/api/courses/
+
+#### Descrição
+
+```
+    - Rota de Instrutor
+    - Retorna a lista de todos os cursos
+```
+
+_Envio:_
+
+```json
+nobody
+```
+
+_Resposta:_
+
+```json
+[
+  {
+    "uuid": "7a8bcf53-4d1b-4a4b-af9e-c8838ef2d567",
+    "name": "Django",
+    "demo_time": "9:00",
+    "link_repo": "http://django.ts.com/git",
+    "instructor": null,
+    "students": []
+  }
+]
+```
+
+### GET/api/courses/< id_courses >/
+
+#### Descrição
+
+```
+    - Rota de Instrutor
+    - Retorna o curso correspondente
+```
+
+_Envio:_
+
+```json
+nobody
+```
+
+_Resposta:_
+
+```json
+{
+  "uuid": "7a8bcf53-4d1b-4a4b-af9e-c8838ef2d567",
+  "name": "Django",
+  "demo_time": "9:00",
+  "link_repo": "http://django.ts.com/git",
+  "instructor": null,
+  "students": []
+}
+```
+
+### PATCH/api/courses/< id_courses >/
+
+#### Descrição
+
+```
+    - Rota de Instrutor
+    - Altera um ou mais campos do curso
+```
+
+_Envio:_
+
+```json
+{
+  "demo_time": "05:00"
+}
+```
+
+_Resposta:_
+
+```json
+{
+  "uuid": "7a8bcf53-4d1b-4a4b-af9e-c8838ef2d567",
+  "name": "Django",
+  "demo_time": "5:00",
+  "link_repo": "http://django.ts.com/git",
+  "instructor": null,
+  "students": []
+}
+```
+
+### PUT/api/courses/< id_courses >/registrations/instructor/
+
+#### Descrição
+
+```
+    - Rota de Instrutor
+    - Registra um intrutor ao curso
+```
+
+_Envio:_
+
+```json
+{
+  "instructor_id": "07e99feb-4a82-4fc7-9918-7c13db26fafc"
+}
+```
+
+_Resposta:_
+
+```json
+{
+  "uuid": "7a8bcf53-4d1b-4a4b-af9e-c8838ef2d567",
+  "name": "Django",
+  "demo_time": "9:00",
+  "link_repo": "http://django.ts.com/git",
+  "instructor": {
+    "uuid": "07e99feb-4a82-4fc7-9918-7c13db26fafc",
+    "is_admin": true,
+    "email": "adm2@hot.com",
+    "first_name": "adm",
+    "last_name": "jr"
+  },
+  "students": []
+}
+```
+
+### PUT/api/courses/< id_courses >/registrations/students/
+
+#### Descrição
+
+```
+    - Rota de Instrutor
+    - Registra alunos ao curso
+```
+
+_Envio:_
+
+```json
+{
+  "students_id": [
+    "97f62170-a9a5-411b-b2ba-d409608fc288",
+    "907f6fe1-56c1-4043-beb7-0c8b56cb68b6"
+  ]
+}
+```
+
+_Resposta:_
+
+```json
+{
+  "uuid": "7a8bcf53-4d1b-4a4b-af9e-c8838ef2d567",
+  "name": "Django",
+  "demo_time": "9:00",
+  "link_repo": "http://django.ts.com/git",
+  "instructor": {
+    "uuid": "07e99feb-4a82-4fc7-9918-7c13db26fafc",
+    "is_admin": true,
+    "email": "adm2@hot.com",
+    "first_name": "adm",
+    "last_name": "jr"
+  },
+  "students": [
+    {
+      "uuid": "97f62170-a9a5-411b-b2ba-d409608fc288",
+      "is_admin": false,
+      "email": "aluno@hot.com",
+      "first_name": "Antonio",
+      "last_name": "Foo"
+    },
+    {
+      "uuid": "907f6fe1-56c1-4043-beb7-0c8b56cb68b6",
+      "is_admin": false,
+      "email": "aluno2@hot.com",
+      "first_name": "Francisco",
+      "last_name": "Foo"
+    }
+  ]
+}
+```
+
+### DELETE/api/courses/< id_courses >/
+
+#### Descrição
+
+```
+    - Rota de Instrutor
+    - Deleta um curso registrado
+```
+
+_Envio:_
+
+```json
+nobody
+```
+
+_Resposta:_
+
+```json
+nocontent
+```
